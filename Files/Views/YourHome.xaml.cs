@@ -9,7 +9,13 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using Windows.ApplicationModel.AppService;
+using Windows.ApplicationModel.Core;
+using Windows.Foundation;
+using Windows.UI.Core;
+using Windows.UI.ViewManagement;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 
 namespace Files
@@ -28,20 +34,20 @@ namespace Files
 
         private void YourHome_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
-            if (DrivesWidget != null)
-            {
-                DrivesWidget.DrivesWidgetInvoked += DrivesWidget_DrivesWidgetInvoked;
-            }
-            if (LibraryWidget != null)
-            {
-                LibraryWidget.LibraryCardInvoked += LibraryLocationCardsWidget_LibraryCardInvoked;
-            }
-            if (RecentFilesWidget != null)
-            {
-                RecentFilesWidget.RecentFilesOpenLocationInvoked += RecentFilesWidget_RecentFilesOpenLocationInvoked;
-                RecentFilesWidget.RecentFileInvoked += RecentFilesWidget_RecentFileInvoked;
-            }
-            this.Loaded -= YourHome_Loaded;
+            //if (DrivesWidget != null)
+            //{
+            //    DrivesWidget.DrivesWidgetInvoked += DrivesWidget_DrivesWidgetInvoked;
+            //}
+            //if (LibraryWidget != null)
+            //{
+            //    LibraryWidget.LibraryCardInvoked += LibraryLocationCardsWidget_LibraryCardInvoked;
+            //}
+            //if (RecentFilesWidget != null)
+            //{
+            //    RecentFilesWidget.RecentFilesOpenLocationInvoked += RecentFilesWidget_RecentFilesOpenLocationInvoked;
+            //    RecentFilesWidget.RecentFileInvoked += RecentFilesWidget_RecentFileInvoked;
+            //}
+            //this.Loaded -= YourHome_Loaded;
         }
 
         private async void RecentFilesWidget_RecentFileInvoked(object sender, UserControls.PathNavigationEventArgs e)
@@ -148,6 +154,34 @@ namespace Files
                 Path = tag,
             };
             AppInstance.NavigationToolbar.PathComponents.Add(item);
+        }
+
+        private async void Button_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+
+            CoreApplicationView newWindow = CoreApplication.CreateNewView();
+            ApplicationView newView = null;
+
+            await newWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                Frame frame = new Frame();
+                frame.Navigate(typeof(Test), null, new SuppressNavigationTransitionInfo());
+                Window.Current.Content = frame;
+                Window.Current.Activate();
+
+                newView = ApplicationView.GetForCurrentView();
+                newWindow.TitleBar.ExtendViewIntoTitleBar = true;
+                newView.Title = "PropertiesTitle".GetLocalized();
+                newView.PersistedStateId = "Properties";
+                newView.SetPreferredMinSize(new Size(400, 550));
+                newView.Consolidated += delegate
+                {
+                    Window.Current.Close();
+                };
+            });
+            bool viewShown = await ApplicationViewSwitcher.TryShowAsStandaloneAsync(newView.Id);
+            // Set window size again here as sometimes it's not resized in the page Loaded event
+            newView.TryResizeView(new Size(400, 550));
         }
     }
 }
