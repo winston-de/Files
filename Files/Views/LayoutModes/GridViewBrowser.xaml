@@ -959,6 +959,7 @@
             PreviewKeyDown="FileList_PreviewKeyDown"
             SelectionChanged="FileList_SelectionChanged"
             SelectionMode="Extended"
+            CanDragItems="True"
             Visibility="{x:Bind FolderSettings.IsLayoutModeChanging, Mode=OneWay, Converter={StaticResource NegatedBoolToVisibilityConverter}}">
             <Interactivity:Interaction.Behaviors>
                 <Core:DataTriggerBehavior Binding="{x:Bind InstanceViewModel.IsPageTypeRecycleBin, Mode=OneWay}" Value="True">

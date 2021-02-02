@@ -864,10 +864,25 @@ namespace Files
 
             if (selectedStorageItems.Count == 0)
             {
-                e.Cancel = true;
-                return;
-            }
+                //e.Cancel = true;
+                //return;
+                var item = (sender as GridViewItem)?.DataContext as ListedItem;
 
+                if (item is ShortcutItem)
+                {
+                    // Can't drag shortcut items
+                }
+                else if (item.PrimaryItemAttribute == StorageItemTypes.File)
+                {
+                    await ParentShellPageInstance.FilesystemViewModel.GetFileFromPathAsync(item.ItemPath)
+                        .OnSuccess(t => selectedStorageItems.Add(t));
+                }
+                else if (item.PrimaryItemAttribute == StorageItemTypes.Folder)
+                {
+                    await ParentShellPageInstance.FilesystemViewModel.GetFolderFromPathAsync(item.ItemPath)
+                        .OnSuccess(t => selectedStorageItems.Add(t));
+                }
+            }
             e.Data.SetStorageItems(selectedStorageItems, false);
             e.DragUI.SetContentFromDataPackage();
         }
