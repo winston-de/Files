@@ -203,7 +203,7 @@ namespace Files.Helpers
                 var properties = await ext.GetExtensionPropertiesAsync() as PropertySet;
                 var filestream = await ext.AppInfo.DisplayInfo.GetLogo(new Windows.Foundation.Size(1, 1)).OpenReadAsync();
                 BitmapImage logo = new BitmapImage();
-                logo.SetSource(filestream);
+                //logo.SetSource(filestream);
 
                 Extension newExtension = new Extension(ext, properties, logo);
                 Extensions.Add(newExtension);

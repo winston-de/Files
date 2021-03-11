@@ -300,74 +300,50 @@ namespace Files
                     var operation = cmdLineArgs.Operation;
                     var cmdLineString = operation.Arguments;
                     var activationPath = operation.CurrentDirectoryPath;
+                    var commands = Environment.GetCommandLineArgs();
+
+                    var navParam = new PageArguments();
 
                     var parsedCommands = CommandLineParser.ParseUntrustedCommands(cmdLineString);
-
-                    if (parsedCommands != null && parsedCommands.Count > 0)
+                    try
                     {
-                        foreach (var command in parsedCommands)
+                        if (commands.Length >= 2)
                         {
-                            switch (command.Type)
+                            var command = commands[1];
+
+                            if (command.Equals("."))
                             {
-                                case ParsedCommandType.OpenDirectory:
-                                    rootFrame.Navigate(typeof(MainPage), command.Payload, new SuppressNavigationTransitionInfo());
-
-                                    // Ensure the current window is active.
-                                    Window.Current.Activate();
-                                    Window.Current.CoreWindow.Activated += CoreWindow_Activated;
-                                    return;
-
-                                case ParsedCommandType.OpenPath:
-
-                                    try
-                                    {
-                                        var det = await StorageFolder.GetFolderFromPathAsync(command.Payload);
-
-                                        rootFrame.Navigate(typeof(MainPage), command.Payload, new SuppressNavigationTransitionInfo());
-
-                                        // Ensure the current window is active.
-                                        Window.Current.Activate();
-                                        Window.Current.CoreWindow.Activated += CoreWindow_Activated;
-
-                                        return;
-                                    }
-                                    catch (System.IO.FileNotFoundException ex)
-                                    {
-                                        //Not a folder
-                                        Debug.WriteLine($"File not found exception App.xaml.cs\\OnActivated with message: {ex.Message}");
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Debug.WriteLine($"Exception in App.xaml.cs\\OnActivated with message: {ex.Message}");
-                                    }
-
-                                    break;
-
-                                case ParsedCommandType.Unknown:
-                                    if (command.Payload.Equals("."))
-                                    {
-                                        rootFrame.Navigate(typeof(MainPage), activationPath, new SuppressNavigationTransitionInfo());
-                                    } else
-                                    {
-                                        var target = Path.GetFullPath(Path.Combine(activationPath, command.Payload));
-                                        if(!string.IsNullOrEmpty(command.Payload))
-                                        {
-                                            rootFrame.Navigate(typeof(MainPage), target, new SuppressNavigationTransitionInfo());
-                                        } else
-                                        {
-                                            rootFrame.Navigate(typeof(MainPage), null, new SuppressNavigationTransitionInfo());
-                                        }
-                                    }
-                                    
-                                    // Ensure the current window is active.
-                                    Window.Current.Activate();
-                                    Window.Current.CoreWindow.Activated += CoreWindow_Activated;
-
-                                    return;
+                                navParam.Path = activationPath;
+                            }
+                            else if (Path.IsPathRooted(command))
+                            {
+                                navParam.Path = command;
+                            }
+                            else
+                            {
+                                var target = Path.GetFullPath(Path.Combine(activationPath, command));
+                                if (!string.IsNullOrEmpty(command))
+                                {
+                                    navParam.Path = target;
+                                }
                             }
                         }
+
+                        if (commands.Contains("-s") || commands.Contains("--select"))
+                        {
+                            navParam.TargetFile = Path.GetFileName(navParam.Path);
+                            navParam.Path = Path.GetDirectoryName(navParam.Path);
+                        }
                     }
-                    break;
+                    catch (ArgumentException)
+                    {
+
+                    }
+                    
+                    rootFrame.Navigate(typeof(MainPage), navParam, new SuppressNavigationTransitionInfo());
+                    Window.Current.Activate();
+                    Window.Current.CoreWindow.Activated += CoreWindow_Activated;
+                    return;
 
                 case ActivationKind.ToastNotification:
                     var eventArgsForNotification = args as ToastNotificationActivatedEventArgs;

@@ -315,7 +315,7 @@ namespace Files.Views
         protected override void OnNavigatedTo(NavigationEventArgs eventArgs)
         {
             base.OnNavigatedTo(eventArgs);
-            NavParams = eventArgs.Parameter.ToString();
+            NavParams = new PageArguments() { Path = eventArgs.Parameter.ToString() };
         }
 
         private void AppSettings_SortDirectionPreferenceUpdated(object sender, EventArgs e)
@@ -693,9 +693,9 @@ namespace Files.Views
             }
         }
 
-        private string navParams;
+        private PageArguments navParams;
 
-        public string NavParams
+        public PageArguments NavParams
         {
             get => navParams;
             set
@@ -713,21 +713,21 @@ namespace Files.Views
 
         private void OnNavigationParamsChanged()
         {
-            if (string.IsNullOrEmpty(NavParams) || NavParams == "NewTab".GetLocalized() || NavParams == "Home")
+            if (string.IsNullOrEmpty(NavParams.Path) || NavParams.Path == "NewTab".GetLocalized() || NavParams.Path == "Home")
             {
                 ItemDisplayFrame.Navigate(typeof(YourHome),
                     new NavigationArguments()
                     {
-                        NavPathParam = NavParams,
+                        NavPathParam = NavParams.Path,
                         AssociatedTabInstance = this
                     });
             }
             else
             {
-                ItemDisplayFrame.Navigate(InstanceViewModel.FolderSettings.GetLayoutType(NavParams),
+                ItemDisplayFrame.Navigate(InstanceViewModel.FolderSettings.GetLayoutType(NavParams.Path),
                     new NavigationArguments()
                     {
-                        NavPathParam = NavParams,
+                        NavPathParam = NavParams.Path,
                         AssociatedTabInstance = this
                     });
             }
@@ -1196,6 +1196,11 @@ namespace Files.Views
                                 ContentPage.ScrollIntoView(itemToSelect);
                             }
                         }
+                    } else if (!string.IsNullOrEmpty(NavParams.TargetFile))
+                    {
+                        ListedItem itemToSelect = FilesystemViewModel.FilesAndFolders.Where((item) => item.ItemName == NavParams.TargetFile).FirstOrDefault();
+                        ContentPage.SetSelectedItemOnUi(itemToSelect);
+                        ContentPage.ScrollIntoView(itemToSelect);
                     }
                     break;
             }

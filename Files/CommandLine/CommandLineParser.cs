@@ -164,4 +164,11 @@ namespace Files.CommandLine
             return key != null ? new KeyValuePair<string, string>(key, val) : default;
         }
     }
+
+    public struct CommandLineLaunchArgs
+    {
+        public bool SelectItem { get; set; }
+        public string Path { get; set; }
+        public string TargetItemName { get; set; }
+    }
 }

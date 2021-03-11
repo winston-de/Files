@@ -119,9 +119,9 @@ namespace Files.Views
             get => AppSettings.IsDualPaneEnabled && !IsWindowCompactSize;
         }
 
-        private string navParamsLeft;
+        private PageArguments navParamsLeft;
 
-        public string NavParamsLeft
+        public PageArguments NavParamsLeft
         {
             get => navParamsLeft;
             set
@@ -134,9 +134,9 @@ namespace Files.Views
             }
         }
 
-        private string navParamsRight;
+        private PageArguments navParamsRight;
 
-        public string NavParamsRight
+        public PageArguments NavParamsRight
         {
             get => navParamsRight;
             set
@@ -236,14 +236,20 @@ namespace Files.Views
             base.OnNavigatedTo(eventArgs);
             if (eventArgs.Parameter is string navPath)
             {
-                NavParamsLeft = navPath;
-                NavParamsRight = "NewTab".GetLocalized();
+                NavParamsLeft = new PageArguments() { Path = navPath };
+                NavParamsRight = new PageArguments() { Path = "NewTab".GetLocalized() };
             }
             if (eventArgs.Parameter is PaneNavigationArguments paneArgs)
             {
-                NavParamsLeft = paneArgs.LeftPaneNavPathParam;
-                NavParamsRight = paneArgs.RightPaneNavPathParam;
+                NavParamsLeft = new PageArguments() { Path = paneArgs.LeftPaneNavPathParam };
+                NavParamsRight = new PageArguments() { Path = paneArgs.RightPaneNavPathParam };
                 IsRightPaneVisible = IsMultiPaneEnabled && paneArgs.RightPaneNavPathParam != null;
+            }
+
+            if(eventArgs.Parameter is PageArguments cmdArgs)
+            {
+                NavParamsLeft = cmdArgs;
+                NavParamsRight = new PageArguments() { Path = "NewTab".GetLocalized() };
             }
         }
 
@@ -382,7 +388,7 @@ namespace Files.Views
         public void OpenPathInNewPane(string path)
         {
             IsRightPaneVisible = true;
-            NavParamsRight = path;
+            NavParamsRight.Path = path;
         }
 
         private void KeyboardAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
@@ -404,9 +410,9 @@ namespace Files.Views
                 case (true, true, false, VirtualKey.Right): // ctrl + shift + "->" select right pane
                     if (AppSettings.IsDualPaneEnabled)
                     {
-                        if (string.IsNullOrEmpty(NavParamsRight))
+                        if (string.IsNullOrEmpty(NavParamsRight.Path))
                         {
-                            NavParamsRight = "NewTab".GetLocalized();
+                            NavParamsRight.Path = "NewTab".GetLocalized();
                         }
                         IsRightPaneVisible = true;
                         ActivePane = PaneRight;
@@ -420,9 +426,9 @@ namespace Files.Views
                 case (false, true, true, VirtualKey.Add): // alt + shift + "+" open pane
                     if (AppSettings.IsDualPaneEnabled)
                     {
-                        if (string.IsNullOrEmpty(NavParamsRight))
+                        if (string.IsNullOrEmpty(NavParamsRight.Path))
                         {
-                            NavParamsRight = "NewTab".GetLocalized();
+                            NavParamsRight.Path = "NewTab".GetLocalized();
                         }
                         IsRightPaneVisible = true;
                     }
@@ -561,5 +567,11 @@ namespace Files.Views
     {
         public string LeftPaneNavPathParam { get; set; } = null;
         public string RightPaneNavPathParam { get; set; } = null;
+    }
+
+    public class PageArguments
+    {
+        public string Path { get; set; }
+        public string TargetFile { get; set; }
     }
 }

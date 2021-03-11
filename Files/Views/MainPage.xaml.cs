@@ -149,6 +149,10 @@ namespace Files.Views
                     else if (eventArgs.Parameter is TabItemArguments tabArgs)
                     {
                         await AddNewTabByParam(tabArgs.InitialPageType, tabArgs.NavigationArg);
+
+                    } else if(eventArgs.Parameter is PageArguments cmdArgs)
+                    {
+                        await AddNewTabByParam(typeof(PaneHolderPage), cmdArgs);
                     }
                 }
 
@@ -424,6 +428,9 @@ namespace Files.Views
                 {
                     (tabItem.Header, tabItem.IconSource) = await GetSelectedTabInfoAsync(paneArgs.LeftPaneNavPathParam);
                 }
+            } else if(navigationArg is CommandLine.CommandLineLaunchArgs cmdArgs)
+            {
+                (tabItem.Header, tabItem.IconSource) = await GetSelectedTabInfoAsync(cmdArgs.Path);
             }
             else if (navigationArg is string pathArgs)
             {
