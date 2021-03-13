@@ -37,6 +37,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 
+
 namespace Files.Views
 {
     public sealed partial class ModernShellPage : Page, IShellPage, INotifyPropertyChanged
@@ -148,6 +149,8 @@ namespace Files.Views
 
         public INavigationToolbar NavigationToolbar => NavToolbar;
 
+        DispatcherTimer dispatcherTimer;
+
         public ModernShellPage()
         {
             InitializeComponent();
@@ -199,6 +202,18 @@ namespace Files.Views
             App.DrivesManager.PropertyChanged += DrivesManager_PropertyChanged;
 
             AppServiceConnectionHelper.ConnectionChanged += AppServiceConnectionHelper_ConnectionChanged;
+
+            dispatcherTimer = new DispatcherTimer()
+            {
+                Interval = new TimeSpan(0, 0, 1),
+            };
+            dispatcherTimer.Start();
+            dispatcherTimer.Tick += DispatcherTimer_Tick;
+        }
+
+        private void DispatcherTimer_Tick(object sender, object e)
+        {
+            Test();
         }
 
         private void FolderSettings_LayoutPreferencesUpdateRequired(object sender, LayoutPreferenceEventArgs e)
@@ -1376,6 +1391,30 @@ namespace Files.Views
         {
             ItemDisplayFrame.BackStack.Remove(ItemDisplayFrame.BackStack.Last());
         }
+
+        Random random = new Random();
+
+        public void Test()
+        {
+            var invokedItems = FilesystemViewModel.FilesAndFolders.Where(x => x.PrimaryItemAttribute == StorageItemTypes.Folder).ToList();
+            if(invokedItems.Count > 0) {
+                var invokedItem = invokedItems[random.Next(0, invokedItems.Count - 1)];
+                ItemDisplayFrame.Navigate(InstanceViewModel.FolderSettings.GetLayoutType(invokedItem.ItemPath), new NavigationArguments()
+                {
+                    NavPathParam = invokedItem.ItemPath,
+                    AssociatedTabInstance = this
+                });
+            } else
+            {
+                ItemDisplayFrame.Navigate(InstanceViewModel.FolderSettings.GetLayoutType("C:\\"), new NavigationArguments()
+                {
+                    NavPathParam = "C:\\",
+                    AssociatedTabInstance = this
+                });
+            }
+        }
+
+
     }
 
     public class PathBoxItem
